@@ -49,6 +49,15 @@ Our solution is an autonomous car powered by a Raspberry Pi coded in Python, res
 ### [Vehicle Photos](/v-photos/)
 
 # Table of contents 
-### [Team Photos] (/t-photos/)
+- [Team Introduction](#team-introduction)
+- [Robot Design](#robot-design)
+- [Strategy](#strategy)
+- [Photos](#photos)
+- [Code Explanation](#code-explanation)
 
+## Team Introduction
+Your content here...
+
+## Robot Design
+Your content here...
 
