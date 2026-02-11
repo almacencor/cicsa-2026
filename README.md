@@ -50,7 +50,7 @@ Our solution is an autonomous car powered by a Raspberry Pi coded in Python, res
 
 # Table of contents 
 - [Team Introduction](#team-introduction)
-- [Robot Design](#robot-design)
+- [Robot Design](models/.gitkeep)
 - [Strategy](#strategy)
 - [Photos](t-photos/README.md)
 - [Code Explanation](#code-explanation)
