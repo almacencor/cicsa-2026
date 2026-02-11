@@ -1,17 +1,3 @@
-# Introduction
-We are the StormsNGR team from Hungary, and we are competing in the 2025 WRO Future Engineers category. This is our second year competing after a very successful first year, for which you can find our documentation [here](https://github.com/MoCsabi/WRO2024-FE-StormsNGR). We will be keeping that repository as it is, and will be updating this repository for the 2025 season.
-
-## The team
->Team members
-- **Csaba Molnár** from [Budapest University of Technology and Economics](https://www.bme.hu/en) Faculty of Electrical Engineering and Informatics
-  - csabi@molnarnet.hu
-- **András Gräff** from [Budapest University of Technology and Economics](https://www.bme.hu/en) Faculty of Mechanical Engineering
-  - andrasgraff@gmail.com
-- **Levente Molnár** from [Sóskút Károly Andreetti elementary school](https://iskola.soskut.hu/)
-  - levente@molnarnet.hu
->Coach
-- József Balázs Gräff
-  - graffjozsefb@gmail.com
 
 Links to our socials:
 
@@ -47,11 +33,11 @@ Sergio Iván has been the director of the CICSA robotics academy since 2015 and 
 ***
 **Members:**
 
-**Gildardo Garcia**, 
+**Gildardo Garcia**, at 16 years old, he studies in the Centro de Estudios Tecnológicos Industrial y de Servicios 128. He has participate in the 2019 Regional in Guadalajara in the primary category, where he obtained 2nd place.
 ***
 **Sergio Amid Hernández Gónzalez**, at 19 years old, he studies Software Engineering at Kuepa University. He has participated in numerous competitions, including: the 2019 WRO Regional in Guadalajara, Jalisco, México, where he obtained 1st place. In 2024, in the city of Mexicali, Baja California, México, they obtained 1st place in the preparatory category. He was part of the Mexican robotics team that represented Mexico at the ChampionShip in Italy in 2024.
 ***
-**Diego Pereida Arochi**,
+**Diego Pereida Arochi**, At 17 years old, he is a student at the Nogales high school. He has been in numerous competitions, including the: FIRST robotics competition in the United states and in Mexico has participated thourgh the years in the WRO robomission challange achieving 1st place in WRO 2025 Mexicali and along side Sergio Amid made it to the WRO Italy 2024 open world championship to respresent Mexico.
 
 ___
 
@@ -62,5 +48,4 @@ Our solution is an autonomous car powered by a Raspberry Pi coded in Python, res
 ### [Team Photos](/t-photos/)
 ### [Vehicle Photos](/v-photos/)
 
-# Special thanks
-Special thanks to Zsolt Molnár for all the mentoring he's done for us, József Molnár from the [Budapest University of Technology and Economics](https://www.bme.hu/) Faculty of Mechanical Engineering for helping us with the preparations, György Fenyvesi for helping us develop our prototype [custom made interconnect panel](/schemes/README.md/#custom-made-interconnect-panel-wiring-with-connections-labeled), and a bunch of others for helping us by reviewing all the documentation. And of course, to both our families for tolerating us taking up the entire living room with the robot mat 🙂.
+
