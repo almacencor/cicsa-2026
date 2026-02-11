@@ -49,6 +49,6 @@ Our solution is an autonomous car powered by a Raspberry Pi coded in Python, res
 ### [Vehicle Photos](/v-photos/)
 
 # Table of contents 
-### [Team Photos] (/https://github.com/almacencor/cicsa-2026/tree/main/)
+### [Team Photos] (/t-photos/)
 
 
