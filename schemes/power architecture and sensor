@@ -3,4 +3,4 @@
 In this file why are gone to explain the reason why do we use some of the sensors that are in the robot and why are in that zone, the reason of why we put them and why do me choose them above the other sensors of course we are gone put some examples of the reason in some of the test taht we do with the robot
 ## HC-SR04 => URM37 V5
 The first sensor that we change was the ultrasonic sensor HC-SR04 that we use in the first model for their very easy conections and easy to program and have a good compatibility with the ESP32 and a lot of information of how to use it but this one had a big problem which was the timing between pulses since sometimes it gave erroneous or incorrect measurements.
- <img width="842" height="468" alt="image" src=https://github.com/almacencor/cicsa-2026/blob/a0fc8f5085f1cb9296cfc42a2a73605b7d71cce3/other/HC-SR04.png
+ <img width="842" height="468" alt="image" src="https://github.com/almacencor/cicsa-2026/blob/a0fc8f5085f1cb9296cfc42a2a73605b7d71cce3/other/HC-SR04.png" />
