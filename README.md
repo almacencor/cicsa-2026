@@ -54,7 +54,7 @@ Our solution is an autonomous car powered by a Raspberry Pi coded in Python, res
 - [Strategy](#strategy)
 - [Photos](t-photos/README.md)
 - [Code Explanation](#code-explanation)
-- [sensors and motors](#https://github.com/almacencor/cicsa-2026/edit/main/README.md)
+- [sensors and motors](#sensorsandmotors/README.md)
 
 ## Team Introduction
 Your content here...
