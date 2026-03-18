@@ -53,11 +53,15 @@ Our solution is an autonomous car powered by a Raspberry Pi coded in Python, res
 - [Robot Design](models/.gitkeep)
 - [Strategy](#strategy)
 - [Photos](t-photos/README.md)
-- [Code Explanation](#code-explanation)
-- [sensors and motors](#Sensors-and-Motors)
+- [Code Explanation](t-Codeexplanation/README.md)
+- [sensors and motors](t-SensorsandMotors/README.md)
 
 ## Team Introduction
 Your content here...
+
+## Sensors and Motors
+
+## Code Explanation
 
 ## Robot Design
 Your content here...
