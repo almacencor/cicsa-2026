@@ -1,0 +1,12 @@
+# My Cool Project
+This project does something awesome.
+
+## Features
+- Easy to use
+- Fast and lightweight
+- Open source
+
+## Installation
+```bash
+git clone https://github.com/username/my-cool-project.git
+cd my-cool-project
