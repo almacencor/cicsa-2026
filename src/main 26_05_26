@@ -1,0 +1,104 @@
+import _thread
+from machine import Pin, I2C, PWM, time_pulse_us
+from time import sleep
+import time
+from time import sleep_ms
+
+# ------------------ HARDWARE ------------------
+
+# LED
+led = Pin(2, Pin.OUT)
+led.value(1)
+sleep(0.25)
+led.value(0)
+
+# Ultrasonic sensor (left side)
+distance_left = 0
+UR_ECHO_LEFT = Pin(15, Pin.IN)   
+UR_TRIG_LEFT = Pin(4, Pin.OUT)
+
+# Servo motor
+servo = PWM(Pin(21), freq=50)   # 50 Hz SG90
+
+# Motors
+RPWM = PWM(Pin(23), freq=1000)
+LPWM = PWM(Pin(22), freq=1000)
+
+# ------------------ FUNCTIONS ------------------
+
+def forward(value):
+    LPWM.duty_u16(value)
+    RPWM.duty_u16(0)
+
+def set_servo_angle(angle):
+    angle = max(0, min(180, angle))
+    pulse_width = 500 + (angle / 180) * 2000  # µs
+    duty = int((pulse_width / 20000) * 65535)
+    servo.duty_u16(duty)
+
+def get_distance(echo, trig):
+    trig.off()
+    time.sleep_us(10)
+    trig.on()
+    low_time = time_pulse_us(echo, 0, 100000)
+    if low_time <= 0 or low_time > 100000:
+        return None
+    else:
+        return int(low_time // 50)  # every 50 µs ≈ 1 cm
+    
+def get_data():
+    global distance_left
+
+    while True:     
+        distance_left = get_distance(UR_ECHO_LEFT, UR_TRIG_LEFT)
+        time.sleep_ms(15)
+        
+_thread.start_new_thread(get_data, ())
+time.sleep(1.5)
+
+
+# ------------------ PID ------------------
+
+def pid(ref, condition, speed):
+    global distance_left
+    counter = 0
+    output = 0.0
+
+    error = 0.0
+    prev_error = 0.0
+    prev2_error = 0.0
+    prev_output = 0.0
+    # PID calibration
+    kp = 6
+    ki = 0.02
+    kd = 2.6
+    forward(speed)
+
+    while counter <= condition:
+
+        distance = distance_left
+        if distance < 0:
+            continue
+
+        prev2_error = prev_error
+        prev_error = error
+        error = ref - distance
+        # PID formula
+        output = (kp * (error - prev_error) + ki * error + kd * (error - (2 * prev_error) + prev2_error) + prev_output)
+
+        prev_output = output
+
+        angle = max(45, min(105, int(70 + output)))
+        set_servo_angle(angle)
+
+        print("Distance:", distance, "PID Output:", output, "Angle:", angle)
+        counter += 1
+        sleep(0.001)
+
+    forward(0)
+
+# ------------------ MAIN ------------------
+
+sleep(1)  # stabilize sensor
+pid(15, 600, 10000)
+
