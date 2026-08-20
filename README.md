@@ -556,6 +556,9 @@ We thank Coach Sergio Iván for his support and guidance throughout the season, 
 
 [▲ Menu](#contents)
 
+- this is a little circuit made in proteus of the hole circuit when we put the connections of the circuit but we dont have some of the parts that we need so we put similar parts and put diferents name
+<img width="842" height="468" alt="image" src="https://github.com/user-attachments/assets/f008d91d-e2a0-4c5f-97a4-c56cfcc7fe91" />
+
 ---
 
 ## References
