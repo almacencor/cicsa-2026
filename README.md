@@ -190,9 +190,9 @@ With our wheelbase of approximately 120mm and a software steering limit of ±40�
 | Steering Servo | 5V | ~800mA peak | Via 5V rail |
 | Freenove Camera | 5V (CSI) | ~250mA | Powered through Pi CSI connector — Obstacle Challenge program only |
 
-**Battery:** LiPo 3S 11.1V, 2200 mAh
+**Battery:** OVONIC 3S 11.1V, 2200 mAh
 
-We use a 3S LiPo because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:
+We use a 3S OVONIC because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:
 
 ```
 Total average current draw ≈ 1.5A (motor running) + 0.9A (Pi + LIDAR + camera) ≈ 2.4A
