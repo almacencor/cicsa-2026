@@ -146,7 +146,7 @@ Wheel circumference = π × 42 mm ≈ 132 mm
 Speed = 30 RPM × 132 mm/rev ÷ 60 s ≈ 66 mm/s
 ```
 
-This ~6.6 cm/s base speed provides enough controllability for the PID loop while still completing three laps in a competitive time. The N20 at 12V produces ~1.5 kg·cm of stall torque, sufficient to move our ~420g robot including a safety margin for carpet-surface friction.
+This ~6.6 cm/s base speed provides enough controllability for the PID loop while still completing three laps in a competitive time. The N20 at 12V produces ~1.5 kg·cm of stall torque, sufficient to move our ~1174g robot including a safety margin for carpet-surface friction.
 
 **Steering: DIYmall 11KG Mini All-Metal Digital Servo**
 
