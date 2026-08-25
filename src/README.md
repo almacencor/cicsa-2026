@@ -11,3 +11,9 @@ All artifacts required to resolve dependencies and build the project must be inc
 - Implemented PID control for steering.
 - Real-time PID parameter adjustment.
 - Improved trajectory stability and response time.
+### wro2026_open_e.py – Open challange and PID finalisation (Raspberry pi 4).
+- Calibrated PID to all robot specification
+- removed jittering and increased stability
+- Completed the Open Challange
+
+
