@@ -11,7 +11,7 @@ This is the official repository of **Team CICSA** for the WRO 2026 Future Engine
 
 | Facebook | YouTube | Instagram |
 |---------------|---------------|----------------|
-| [![Facebook](other/facebook.jpg)](https://www.facebook.com/share/1A1hz6zQSn/) | [![YouTube](other/youtube.png)](https://www.youtube.com/@CICSA_Academia) | [![Instagram](other/instagram.jpg)](https://share.google/ZzGMFZOurGsjhWN2D) |
+| [![Facebook](other/facebooklogo.png)](https://www.facebook.com/share/1A1hz6zQSn/) | [![YouTube](other/youtube.png)](https://www.youtube.com/@CICSA_Academia) | [![Instagram](other/instagram.jpg)](https://share.google/ZzGMFZOurGsjhWN2D) |
 
 ---
 
