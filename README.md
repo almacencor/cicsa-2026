@@ -106,18 +106,18 @@ For full game rules, visit the [WRO Official Site](https://wro-association.org/)
 
 | Front | Back | Top |
 |-------|------|-----|
-| ![Front view](v-photos/front.jpg) | ![Back view](v-photos/back.jpg) | ![Top view](v-photos/top.jpg) |
+| ![Front view](v-photos/robot_delante.jpg) | ![Back view](v-photos/robot_atras.jpg) | ![Top view](v-photos/robot_arriba.jpg) |
 
 | Bottom | Left | Right |
 |--------|------|-------|
-| ![Bottom view](v-photos/bottom.jpg) | ![Left view](v-photos/left.jpg) | ![Right view](v-photos/right.jpg) |
+| ![Bottom view](v-photos/robot_abajo.jpg) | ![Left view](v-photos/robot_izquierda.jpg) | ![Right view](v-photos/robot_derecha.jpg) |
 
 | Dimension | Value |
 |-----------|-------|
-| Length | ~220 mm |
-| Width | ~150 mm |
-| Height | ~130 mm |
-| Weight | ~420 g |
+| Length | ~230 mm |
+| Width | ~145 mm |
+| Height | ~190 mm |
+| Weight | ~1174 g |
 
 > **Note for judges:** Exact dimensions measured with calipers are documented in the engineering logbook. Robot must be under 300 mm × 200 mm per WRO vehicle regulations.
 
