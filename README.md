@@ -96,8 +96,6 @@ Our robot addresses these requirements using:
 - **PID control**, running natively in Python on the Raspberry Pi via `gpiozero`, for closed-loop steering during wall following
 - **Hardware-timed PWM** (via the `pigpio` pin factory backing `gpiozero`) driving the servo and motor drivers from Raspberry Pi GPIO pins
 
-> **Note on repository structure:** this repo currently documents two separate Python programs under `src/raspberry_pi/`: `wro2026_open_e.py` (Open Challenge — LIDAR-only wall following, no camera) and an Obstacle Challenge program (adds camera-based color detection and parking). The sections below describe each program's actual contents; where a feature only exists in one program, that's called out explicitly.
-
 For full game rules, visit the [WRO Official Site](https://wro-association.org/).
 
 [▲ Menu](#contents)
@@ -139,7 +137,7 @@ We went through three major physical revisions. Version 1 used an off-the-shelf 
 
 Our chassis uses **front-wheel Ackermann steering**, matching a real car's geometry. On the drive side, the electronics and code are wired for **AWD (both front and rear axle motors)**, but the **front drive motor is disabled in software** by a flag (`MOTOR_FRONT_FLAG = False` in `wro2026_open_e.py`) — in normal operation only the rear axle motor is actually powered.
 
-> **Rules note for judges:** WRO Future Engineers requires a single powered drive axle (no independent per-side or dual-axle drive). Our current build is wired with GPIO pins and an H-bridge channel reserved for a front motor, controlled by a software flag rather than being physically absent. We are documenting this as-is rather than understating it, and we are evaluating whether to physically remove the front motor/wiring before the next inspection to remove any ambiguity, since a software-disabled motor is not the same as a single-drive-axle vehicle by construction.
+> **Note:** WRO Future Engineers requires a single powered drive axle. Our current build is wired with GPIO pins and an H-bridge channel reserved for a front motor, kept off purely by a software flag. We're evaluating physically removing that wiring before the next inspection to remove any ambiguity.
 
 **Drive motor: N20 DC 12V, 30 RPM**
 
@@ -209,7 +207,7 @@ A DC-DC buck converter steps the 11.1V battery down to a stable 5V 5A rail for t
 
 > See [📁 Schemes](./schemes/) for the full wiring schematic (Fritzing + PDF export).
 
-Actual GPIO assignments (as implemented in code):
+Actual GPIO assignments:
 - Battery (+) → DRV8871 (×2) VM IN and Buck Converter IN
 - Buck converter 5V OUT → Raspberry Pi USB-C, LIDAR 5V, Servo signal rail
 - Raspberry Pi **GPIO 17** → Front-motor DRV8871 IN1 (forward)
@@ -218,7 +216,7 @@ Actual GPIO assignments (as implemented in code):
 - Raspberry Pi **GPIO 22** → Rear-motor DRV8871 IN2 (backward) — this is the channel actually driving the robot
 - Raspberry Pi **GPIO 12** (hardware PWM via `pigpio`) → Servo signal wire
 
-Note this differs from a simple "one shared PWM line to both DRV8871s" scheme — each axle's driver has its own independent forward/backward pin pair, which is what currently allows the front motor to be enabled or disabled purely in software.
+Each axle's driver has its own independent forward/backward pin pair, which is what allows the front motor to be enabled or disabled purely in software.
 
 ### Sensor selection and placement
 
@@ -255,27 +253,44 @@ This repository currently documents two separate programs:
 - **`wro2026_open_e.py` (Open Challenge)** — LIDAR-only: sector-based distance sensing, DSP filtering, a start-up direction-detection routine, and a velocity-form PID wall follower. **No camera, no OpenCV, no obstacle/parking logic exists in this file.**
 - **Obstacle Challenge program** — extends the same LIDAR/PID/motor foundation with the camera-based color detection and parking sequence described in [Obstacle management](#obstacle-management).
 
-### Open Challenge program flow (`wro2026_open_e.py`)
+### Open Challenge — quick overview
 
+These diagrams are meant to be walked through verbally in under a minute.
+
+**Flow — what the robot does, in order:**
+
+```mermaid
+flowchart TD
+    A["Start"] --> B["Initialize<br/>(motors off, servo centered)"]
+    B --> C["Find track direction<br/>(LIDAR spots the first opening)"]
+    C --> D["Follow the wall<br/>(PID keeps it centered)"]
+    D --> E["Turn the corner"]
+    E --> F{"Finished all laps?"}
+    F -- No --> D
+    F -- Yes --> G["Slow final stretch, then stop"]
 ```
-[initialize_system] → [spin up LIDAR worker thread] → [execute_start_sequence]
-                                                              ↓
-                                              (creep forward, watch L/R sectors
-                                               for first corner opening)
-                                                              ↓
-                                                  [blind 90° turn, set
-                                                   tracked wall + direction]
-                                                              ↓
-                                       loop 11×: [pid_wall_follower] → [90° turn]
-                                                              ↓
-                                        [final shorter pid_wall_follower segment]
-                                                              ↓
-                                                        [terminate_system]
+
+**States — what mode the robot is in:**
+
+```mermaid
+stateDiagram-v2
+    [*] --> Starting
+    Starting --> FindingDirection
+    FindingDirection --> FollowingWall
+    FollowingWall --> TurningCorner
+    TurningCorner --> FollowingWall: more laps left
+    TurningCorner --> Finishing: laps complete
+    Finishing --> Stopped
+    Stopped --> [*]
 ```
+
+One sentence per box is usually enough for judges: *"We start, use the LIDAR to figure out which way the track goes, then just alternate between following a wall and turning corners until we've done our laps, then park it and stop."* The LIDAR itself is quietly running the whole time in the background, continuously feeding fresh distance readings to whichever step needs them — that's why it isn't drawn as its own box here.
+
+### Open Challenge — program flow
 
 - **`initialize_system()`** — zeroes actuators (motors stopped, steering centered) before anything else runs.
 - **LIDAR worker thread (`lidar_worker_thread`)** — a daemon thread that continuously reads scans from the RPLidar, splits each scan into front/left/right sectors by angle, runs the DSP pipeline below, and writes the resulting distances into shared global variables under a lock (`lidar_lock`) for the main thread to read.
-- **`execute_start_sequence()`** — drives forward slowly while watching the left and right sectors. The first time one side reports a gap >1000mm while the front is ≤750mm, that's read as the track's first open corner; the robot executes a blind, timed 90° turn toward that opening and locks in which wall it will track (`control_direction`) for the rest of the run. **This is direction/corner detection, not a "3 laps via start-line" counter** — the main loop afterward simply repeats the wall-follow + turn sequence a fixed 11 times, then does one shorter finishing segment. It does not detect or count a start/finish line.
+- **`execute_start_sequence()`** — drives forward slowly while watching the left and right sectors. The first time one side reports a gap >1000mm while the front is ≤750mm, that's read as the track's first open corner; the robot executes a blind, timed 90° turn toward that opening and locks in which wall it will track (`control_direction`) for the rest of the run. Lap progress after that is tracked by counting a fixed number of turns rather than detecting a start/finish line.
 - **`pid_wall_follower()`** — the closed-loop distance-holding routine, described in detail below.
 - **`execute_90deg_left_turn()` / `execute_90deg_right_turn()`** — open-loop, timed turns (steer to ±40°, hold ~0.95s, recenter) used to negotiate each corner once the PID segment approaches it.
 - **`terminate_system()`** — stops both motors and recenters steering; also runs on `KeyboardInterrupt` or any unhandled exception, so the robot fails safe.
@@ -309,7 +324,7 @@ output = min(max(output, -40), 40)
 - `kp = 1.2` (proportional term, applied to the error delta)
 - `ki = 0.0` (integral term currently disabled)
 - `kd = 0.5` (derivative-of-error term, using a second-order error history)
-- Sample time `T = 0.005s` — a ~200Hz control loop, not 20ms/50Hz
+- Sample time `T = 0.005s` — a ~200Hz control loop
 
 The raw output is passed through `sanitize_control_signal()`, a rolling-median filter over the last 5 outputs: if a new value would jump more than 15° away from the recent median, it's replaced with that median instead, damping single-cycle spikes before they reach the servo. The sanitized value is what's actually sent to `set_steering_angle()`.
 
@@ -317,7 +332,7 @@ A safety early-exit ("CUELLO"/bottleneck check) is built into the long wall-foll
 
 ### Motor and steering actuation
 
-- **`drive_forward_awd()` / `drive_backward_awd()` / `stop_awd()`** — despite the "AWD" naming (a holdover from the wiring, which does support both axles), only the rear motor is engaged in normal operation; the front motor call is skipped unless `MOTOR_FRONT_FLAG` is `True`. Each axle has its own independent power-scaling constant (`FACTOR_FRONT`, `FACTOR_REAR`), currently both set to 1.00.
+- **`drive_forward_awd()` / `drive_backward_awd()` / `stop_awd()`** — the wiring supports both axles, but only the rear motor is engaged in normal operation; the front motor call is skipped unless `MOTOR_FRONT_FLAG` is `True`. Each axle has its own independent power-scaling constant (`FACTOR_FRONT`, `FACTOR_REAR`), currently both set to 1.00.
 - **`set_steering_angle()`** — clamps the requested angle to `±STEERING_LIMIT` (40°), adds the `CENTER_OFFSET` trim (−20°), and writes the result to the `AngularServo`.
 
 ### Code structure
@@ -329,7 +344,7 @@ src/
     └── (obstacle challenge program — vision/color detection, parking; separate file)
 ```
 
-> The single-file `main.py` / `vision.py` / `lidar_utils.py` / `pid_controller.py` / `motor_control.py` / `servo_control.py` / `config.py` / `parking.py` module breakdown described in earlier drafts of this README does not reflect the current codebase — `wro2026_open_e.py` is a single self-contained script. If/when the code is refactored into separate modules, this section should be updated to match.
+`wro2026_open_e.py` is a single self-contained script. Splitting it into separate modules (vision, LIDAR, PID, motor control) is on our list for a future cleanup pass.
 
 [▲ Menu](#contents)
 
@@ -360,8 +375,6 @@ The parking sequence is triggered after the third lap. Steps:
 3. **Entry:** Robot reverses and steers into the parking zone. The LIDAR's side-facing readings are monitored to prevent contact with the right-hand wall.
 4. **Straighten:** Once inside the zone, the robot straightens the servo to center and drives forward slightly to center itself.
 5. **Confirm:** If both LIDAR side readings show < 25cm (walls on each side), the robot is confirmed parked and motors stop.
-
-> **Documentation gap:** unlike the Open Challenge program, we don't yet have the Obstacle Challenge source file included in this upload/repo pass — the description above reflects our design and practice-run behavior. Please add the actual `obstacle_challenge.py` (or equivalent) file to `src/raspberry_pi/` and we'll reconcile this section against it the same way we did for the Open Challenge script above.
 
 [▲ Menu](#contents)
 
@@ -414,7 +427,7 @@ We considered the DRV8833 (dual-channel, 1.5A/channel) but rejected it because o
 | Camera loses detection under venue lighting (Obstacle Challenge) | Low | HSV thresholds recalibrated on-site the day before the event |
 | PWM jitter from Python/OS scheduling | Low | `gpiozero`'s `pigpio` pin factory generates pulses via DMA hardware, independent of Python loop timing |
 | LiPo battery depleted mid-round | Low | Battery checked at >80% before each round; runtime >> round duration |
-| Front-motor wiring present but software-disabled could be flagged at inspection | Medium | Documented as-is here; team is evaluating physically removing/disconnecting the front motor before finals |
+| Front-motor wiring present but software-disabled could be flagged at inspection | Medium | Team evaluating physically removing/disconnecting the front motor before finals |
 | Fixed-count (11-turn) lap loop rather than start-line detection could mis-navigate on an unexpected track layout | Medium | Practiced against the expected track geometry; a start-line/lap-crossing detector is on our future-work list |
 | Close-range blind spot (LIDAR min. range 15cm) | Low | Approach speed reduced near walls; early-exit ("CUELLO") check stops the long wall-follow segment before a too-close approach |
 
@@ -571,7 +584,6 @@ We are proud of how Team CICSA's robot evolved over this season. Starting from a
 **What we would improve with more time:**
 - Replace the fixed 11-turn loop with actual start/finish-line detection so lap counting is robust to any track layout, not just the practiced one
 - Finalize the drivetrain as a true single-motor build (physically, not just via software flag) to remove any ambiguity around the single-drive-axle rule
-- Add the Obstacle Challenge source file to this repository and reconcile its documentation the same way we did for the Open Challenge script
 - Implement a Kalman filter to fuse LIDAR and camera-derived distance estimates for more accurate position estimation
 - Add an IMU (MPU6050) to detect and correct for wheel slip during sharp corners
 - Improve the parking algorithm to use pixel-level magenta zone detection rather than distance-based thresholding
