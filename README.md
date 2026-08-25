@@ -192,7 +192,7 @@ With our wheelbase of approximately 120mm and a software steering limit of ±40�
 
 **Battery:** OVONIC 3S 11.1V, 2200 mAh
 
-We use a 3S OVONIC because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:
+We use a 3S LiPo because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:
 
 ```
 Total average current draw ≈ 1.5A (motor running) + 0.9A (Pi + LIDAR + camera) ≈ 2.4A
@@ -437,7 +437,7 @@ We considered the DRV8833 (dual-channel, 1.5A/channel) but rejected it because o
 | DIYmall 11KG Mini All-Metal Digital Servo (360° Coreless) | 1 | Front-wheel steering | [Amazon](https://www.amazon.com/dp/B0DX1XG18Y) |
 | DRV8871 H-Bridge DC Motor Driver | 2 | PWM motor control, 3.6A peak, one per motor channel (front + rear) | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
 | Freenove 8MP Camera | 1 | Traffic sign color detection (Obstacle Challenge program) | [Amazon](https://www.amazon.com/dp/B0BZYPBS17) |
-| LiPo 3S 11.1V 2200mAh | 1 | Main power source | — |
+| OVONIC 3S 11.1V 2200mAh LiPo Battery | 1 | Main power source | [Amazon](https://www.amazon.com/dp/B0D8SZRGJT) |
 | DC-DC Buck Converter 5V 5A | 1 | Steps 11.1V down to 5V rail | [Amazon](https://www.amazon.com/dp/B0D7MR48LB) |
 | 3×120 Dupont Jumper Cables 40cm (M-M, M-F, F-F) | 3 packs | Wiring between all modules | [MercadoLibre](https://articulo.mercadolibre.com.mx/MLM-3643032042-3pzs-120-jumper-cable-dupont-wire-40cm-cable-para-protoboard-_JM) |
 | Velstron 1,112-piece M3/M4/M5/M6 Screws, Bolts & Nuts Kit | 1 | Chassis fasteners and assembly hardware | [MercadoLibre](https://www.mercadolibre.com.mx/kit-surtido-de-1112-piezas-de-tornillos-pernos-y-tuercas/up/MLMU582984840) |
@@ -506,7 +506,7 @@ This repository contains all engineering materials for Team CICSA's self-driving
 | 4 | HobbyPark Brass Beadlock Wheels & Tires 1/18 TRX4M — ~$20/set | [Amazon](https://www.amazon.com/dp/B0C3MNX4K7) |
 | 1 | PATIKIL U-Joint Steering Shaft Coupler 4mm→3mm — ~$8 | [Amazon](https://www.amazon.com/dp/B0FWJGLZ9V) |
 | 2 | RC Front & Rear Axle Housing Set (TRX4M) — ~$12 | [Amazon](https://www.amazon.com/dp/B0CW2HFT57) |
-| 1 | LiPo 3S 11.1V 2200mAh — ~$25 | — |
+| 1 | OVONIC 3S 11.1V 2200mAh LiPo Battery — ~$25 | [Amazon](https://www.amazon.com/dp/B0D8SZRGJT) |
 | 1 | DC-DC Buck Converter 5V 5A — ~$10 | [Amazon](https://www.amazon.com/dp/B0D7MR48LB) |
 | 3 packs | 3×120 Dupont Jumper Cables 40cm — ~$6/pack | [MercadoLibre](https://articulo.mercadolibre.com.mx/MLM-3643032042-3pzs-120-jumper-cable-dupont-wire-40cm-cable-para-protoboard-_JM) |
 | 1 | Velstron 1,112-piece M3/M4/M5/M6 Hardware Kit — ~$18 | [MercadoLibre](https://www.mercadolibre.com.mx/kit-surtido-de-1112-piezas-de-tornillos-pernos-y-tuercas/up/MLMU582984840) |
@@ -527,7 +527,7 @@ This repository contains all engineering materials for Team CICSA's self-driving
 | HobbyPark Brass Wheels (×4) | High-grip 1.0" beadlock wheels for 1/18 TRX4M chassis |
 | PATIKIL U-Joint Coupler | 4mm-to-3mm universal joint connecting servo shaft to front axle |
 | RC Front & Rear Axle Set | Steering and drive axle housings |
-| LiPo 3S 2200mAh | Main power (11.1V, ~55 min runtime) |
+| OVONIC 3S 2200mAh LiPo | Main power (11.1V, ~55 min runtime) |
 | Buck Converter 5V | Regulated 5V rail for Pi, LIDAR, servo |
 | Dupont Jumper Cables | All inter-module wiring connections |
 | M3/M4/M5/M6 Hardware Kit | Chassis assembly fasteners (screws, bolts, nuts, washers) |
