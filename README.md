@@ -284,8 +284,6 @@ stateDiagram-v2
     Stopped --> [*]
 ```
 
-One sentence per box is usually enough for judges: *"We start, use the LIDAR to figure out which way the track goes, then just alternate between following a wall and turning corners until we've done our laps, then park it and stop."* The LIDAR itself is quietly running the whole time in the background, continuously feeding fresh distance readings to whichever step needs them — that's why it isn't drawn as its own box here.
-
 ### Open Challenge — program flow
 
 - **`initialize_system()`** — zeroes actuators (motors stopped, steering centered) before anything else runs.
