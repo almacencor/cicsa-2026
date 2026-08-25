@@ -54,21 +54,21 @@ Coach Sergio Iván provides the technical guidance and leadership required to ke
 
 ---
 
-**Gildardo Garcia** — Age 16 · Centro de Estudios Tecnológicos Industrial y de Servicios 128
+**Gildardo Garcia** — Age 17 · Centro de Estudios Tecnológicos Industrial y de Servicios 128
 
-Gildardo is responsible for the mechanical design and 3D-printed chassis components. He participated in the 2019 WRO Regional in Guadalajara in the primary category, where he obtained 2nd place. For 2026 he leads all physical construction and assembly decisions.
-
----
-
-**Sergio Amid Hernández González** — Age 19 · Software Engineering, Kuepa University
-
-Sergio Amid leads the computer vision and Raspberry Pi software. He has participated in numerous competitions: 2019 WRO Regional in Guadalajara (1st place, preparatory category), 2024 WRO National in Mexicali (1st place, preparatory category), and represented Mexico at the WRO World Championship in Italy in 2024.
+Gildardo is responsible for the programmaing. He participated in the 2019 WRO Regional in Guadalajara in the primary category, where he obtained 2nd place. For the 2026 championship, he is responsible for programming and calibrating the sensors to ensure they function correctly.
 
 ---
 
-**Diego Pereida Arochi** — Age 17 · Nogales High School
+**Sergio Amid Hernández González** — Age 20 · Software Engineering, Kuepa University
 
-Diego is responsible for PID control, motor/servo driver integration, and LIDAR sensor tuning, all running natively on the Raspberry Pi. He has competed in the FIRST Robotics Competition in both the United States and Mexico, achieved 1st place at WRO 2025 Mexicali, and alongside Sergio Amid represented Mexico at the WRO Italy 2024 Open World Championship.
+Sergio Amid leads the design and construction of the robot's 3D parts . He has participated in numerous competitions: 2019 WRO Regional in Guadalajara (1st place, preparatory category), 2024 WRO National in Mexicali (1st place, preparatory category), and represented Mexico at the WRO World Championship in Italy in 2024.
+
+---
+
+**Diego Pereida Arochi** — Age 18 · United States Air Force Avionics technician
+
+Diego is responsible for PID control, motor/servo driver integration, and LIDAR sensor tuning, all running natively on the Raspberry Pi. He has competed in the FIRST Robotics Competition in both the United States and Mexico, achieved 1st place at WRO 2025 Mexicali, and alongside Sergio Amid represented Mexico at the WRO Italy 2024 Open World Championship. Currently in boot camp in San Antonio Texas and wasnt able to attend the national championship.
 
 [📁 T-photos](./t-photos/)
 
