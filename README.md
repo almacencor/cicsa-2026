@@ -121,11 +121,6 @@ For full game rules, visit the [WRO Official Site](https://wro-association.org/)
 
 > **Note for judges:** Exact dimensions measured with calipers are documented in the engineering logbook. Robot must be under 300 mm × 200 mm per WRO vehicle regulations.
 
-| Robot evolution |
-|----------------|
-| ![Robot evolution across design versions](v-photos/evolution.jpg) |
-
-We went through three major physical revisions. Version 1 used an off-the-shelf 4WD chassis with the electronics mounted loosely on top — this caused vibration noise in the camera. Version 2 redesigned the top plate to rigidly mount all electronics and moved the camera to the front. Version 3 (current) added a dedicated LIDAR mount tower, simplified the electronics stack to a single Raspberry Pi controller, and reorganized cable routing to eliminate interference.
 
 [▲ Menu](#contents)
 
@@ -141,14 +136,14 @@ Our chassis uses **front-wheel Ackermann steering**, matching a real car's geome
 
 **Drive motor: N20 DC 12V, 30 RPM**
 
-We selected the N20 30 RPM variant after testing 100 RPM and 200 RPM versions of the same motor family. The higher-RPM motors caused the robot to overshoot turns and made PID tuning unstable at low speeds. At 30 RPM with our 42mm diameter wheels, the linear speed is approximately:
+We selected the N20 400 RPM variant after testing 500 RPM and 1000 RPM versions of the same motor family. The higher-RPM motors caused the robot to overshoot turns and made PID tuning unstable at low speeds. At 200 RPM with our 50mm diameter wheels, the linear speed is approximately:
 
 ```
-Wheel circumference = π × 42 mm ≈ 132 mm
-Speed = 30 RPM × 132 mm/rev ÷ 60 s ≈ 66 mm/s
+Wheel circumference = π × 50 mm ≈ 157 mm
+Speed = 200 RPM × 157 mm/rev ÷ 60 s ≈ 523.333 mm/s
 ```
 
-This ~6.6 cm/s base speed provides enough controllability for the PID loop while still completing three laps in a competitive time. The N20 at 12V produces ~1.5 kg·cm of stall torque, sufficient to move our robot including a safety margin for carpet-surface friction. In code, drive speed is set as a duty-cycle fraction (`target_velocity`, currently 0.5) rather than a raw RPM value.
+This ~52.3 cm/s base speed provides enough controllability for the PID loop while still completing three laps in a competitive time. The N20 at 12V produces ~1.5 kg·cm of stall torque, sufficient to move our robot including a safety margin for carpet-surface friction. In code, drive speed is set as a duty-cycle fraction (`target_velocity`, currently 0.5) rather than a raw RPM value.
 
 **Steering: DIYmall 11KG Mini All-Metal Digital Servo**
 
@@ -190,7 +185,7 @@ With our wheelbase of approximately 120mm and a software steering limit of ±40�
 
 **Battery:** OVONIC 3S 11.1V, 2200 mAh
 
-We use a 3S LiPo because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:
+We use a OVONIC 3S because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:55 minutes if the motors are in a middle range of work and the processor is not demanding to much energy 
 
 ```
 Total average current draw ≈ 1.5A (motor running) + 0.9A (Pi + LIDAR + camera) ≈ 2.4A
@@ -204,6 +199,8 @@ Three competition rounds are estimated at under 10 minutes total, giving more th
 A DC-DC buck converter steps the 11.1V battery down to a stable 5V 5A rail for the Raspberry Pi, LIDAR, and servo. The motor drivers (DRV8871) take 12V directly from the battery to drive the N20 motors. The Raspberry Pi's own 3.3V GPIO pins drive the DRV8871 logic inputs and the servo PWM line directly — no intermediate microcontroller or level shifting is required, since the DRV8871's logic inputs and standard hobby servos both accept 3.3V signal levels.
 
 **Wiring diagram:**
+
+<img width="700" height="450" alt="image" src="t-photos/foto del circuito.png" />
 
 > See [📁 Schemes](./schemes/) for the full wiring schematic (Fritzing + PDF export).
 
@@ -238,6 +235,7 @@ Used by the Obstacle Challenge program (not present in `wro2026_open_e.py`). The
 - LIDAR: Uses RPLidar SDK default factory calibration. Points below 150mm or above 6000mm are discarded as out-of-range/self-mapping noise (see DSP pipeline below).
 - Steering: mechanical/electrical zero-offset is trimmed with the `CENTER_OFFSET` constant in code rather than a separate calibration script.
 - Camera (Obstacle Challenge program): white balance set to auto; HSV color thresholds for red/green calibrated under venue lighting the day before the event and stored as constants in the config file.
+  
 
 [▲ Menu](#contents)
 
