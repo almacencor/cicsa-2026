@@ -182,7 +182,6 @@ With our wheelbase of approximately 120mm and a software steering limit of ±40�
 |LiDAR A1M8	| 5 V	| ~0.12–0.18 A	| ~0.2 A	| 0.6–1 W |
 |Mini Servo, 24.3 lb, 180°	| 5 V	| ~0.2–0.8 A	| ~1.5–2.0 A*	| 1–10 W |
 |N20 Motor #1, 400 RPM	| 11.1 V via DRV8871	| ~0.2–0.8 A	| ~1.5 A or higher*	| ~2–17 W |
-|N20 Motor #2, 400 RPM	| 11.1 V via DRV8871	| ~0.2–0.8 A	| ~1.5 A or higher*	| ~2–17 W |
 
 **Battery:** OVONIC 3S 11.1V, 2200 mAh
 
@@ -511,9 +510,9 @@ This repository contains all engineering materials for Team CICSA's self-driving
 |----------|-----------|------|
 | 1 | Raspberry Pi 4B (4GB) — ~$55 | [Amazon](https://a.co/d/084kiOZ5) |
 | 1 | Freenove 8MP Camera — ~$14 | [Amazon](https://www.amazon.com/dp/B0BZYPBS17) |
-| 2 | DRV8871 H-Bridge DC Motor Driver — ~$4 | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
+| 1 | DRV8871 H-Bridge DC Motor Driver — ~$4 | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
 | 1 | Slamtec RPLIDAR A1M8 360° 2D LIDAR — ~$99 | [Amazon](https://www.amazon.com/dp/B07TJW5SXF) |
-| 2 | N20 DC Gear Motor 12V 400RPM — ~$8 | [Amazon](https://www.amazon.com/dp/B0DB26SYNP) |
+| 1 | N20 DC Gear Motor 12V 400RPM — ~$8 | [Amazon](https://www.amazon.com/dp/B0DB26SYNP) |
 | 1 | DIYmall 11KG Mini All-Metal Digital Servo — ~$16 | [Amazon](https://www.amazon.com/dp/B0DX1XG18Y) |
 | 4 | HobbyPark Brass Beadlock Wheels & Tires 1/18 TRX4M — ~$20/set | [Amazon](https://www.amazon.com/dp/B0C3MNX4K7) |
 | 1 | PATIKIL U-Joint Steering Shaft Coupler 4mm→3mm — ~$8 | [Amazon](https://www.amazon.com/dp/B0FWJGLZ9V) |
@@ -533,7 +532,7 @@ This repository contains all engineering materials for Team CICSA's self-driving
 | Raspberry Pi 4B | State machine, LIDAR processing, PID control, and PWM output (via `gpiozero`/`pigpio`) — all navigation logic in one controller |
 | Freenove Camera | Traffic sign color detection via OpenCV (Obstacle Challenge program only) |
 | Slamtec RPLIDAR A1M8 | 360° sector-based wall distance mapping for navigation and direction detection |
-| DRV8871 Driver | Efficient H-bridge motor control, one channel per motor (front + rear), driven directly from Pi GPIO |
+| DRV8871 Driver | Efficient H-bridge motor control, driven directly from Pi GPIO |
 | N20 DC Gear Motor| Rear-wheel drive active |
 | DIYmall 11KG Servo | Front-wheel Ackermann steering, driven via `gpiozero`'s `AngularServo` (pigpio-backed) |
 | HobbyPark Brass Wheels (×4) | High-grip 1.0" beadlock wheels for 1/18 TRX4M chassis |
