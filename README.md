@@ -157,7 +157,7 @@ In software, the servo is driven through `gpiozero`'s `AngularServo` class (back
 
 **Wheels: TRX4M 1/18 scale**
 
-These wheels provide a balance between grip and rolling resistance. Their 42mm outer diameter was used in all speed calculations above.
+These wheels provide a balance between grip and rolling resistance. Their 2.09IN outer diameter was used in all speed calculations above.
 
 **Turning radius estimation**
 
@@ -186,7 +186,7 @@ With our wheelbase of approximately 120mm and a software steering limit of ±40�
 
 **Battery:** OVONIC 3S 11.1V, 2200 mAh
 
-We use a OVONIC 3S because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:1.11 hours if the motors are in a middle range of work and the processor is not demanding to much energy 
+We use an 11.1V OVONIC 3S battery; although it nominally provides 12.6V, the voltage drops to 11.1V under load. It is capable of powering the N20 motor, as the motor primarily relies on current—which the 8871 driver supplies. A 2200 mAh capacity gives an estimated runtime of:1.11 hours if the motors are in a middle range of work and the processor is not demanding to much energy 
 
 ```
 1.20+0.30+0.18+0.50=2.18
@@ -194,7 +194,6 @@ P5v = 5x2.18 = 10.9W
 Pmotor = 11.1x0.80 = 8.88W
 Ptotal = 10.9+8.88 = 19.78W
 90% regulator efficiency = 21.98W
-Ibattery = 21.98/11.1 = 1.98A
 11.1V x 2.2Ah = 24.42Wh
 Runtime = 24.42Wh/21.98W = 1.11H
 
@@ -213,10 +212,8 @@ A DC-DC buck converter steps the 11.1V battery down to a stable 5V 5A rail for t
 > See [📁 Schemes](./schemes/) for the full wiring schematic (Fritzing + PDF export).
 
 Actual GPIO assignments:
-- Battery (+) → DRV8871 (×2) VM IN and Buck Converter IN
+- Battery (+) → DRV8871 (1) VM IN and Buck Converter IN
 - Buck converter 5V OUT → Raspberry Pi USB-C, LIDAR 5V, Servo signal rail
-- Raspberry Pi **GPIO 17** → Front-motor DRV8871 IN1 (forward)
-- Raspberry Pi **GPIO 18** → Front-motor DRV8871 IN2 (backward) — front channel currently software-disabled
 - Raspberry Pi **GPIO 23** → Rear-motor DRV8871 IN1 (forward)
 - Raspberry Pi **GPIO 22** → Rear-motor DRV8871 IN2 (backward) — this is the channel actually driving the robot
 - Raspberry Pi **GPIO 12** (hardware PWM via `pigpio`) → Servo signal wire
@@ -446,13 +443,13 @@ We considered the DRV8833 (dual-channel, 1.5A/channel) but rejected it because o
 | Component | Quantity | Description | Link |
 |-----------|----------|-------------|------|
 | Slamtec RPLIDAR A1M8 360° 2D LIDAR Scanner | 1 | 360° LIDAR for wall following and close-range checks | [Amazon](https://www.amazon.com/dp/B07TJW5SXF) |
-| N20 DC Gear Motor 12V 400RPM Metal Gearbox | 2 | Rear drive (active) + front drive (wired, software-disabled) | [Amazon](https://www.amazon.com/dp/B0DB26SYNP) |
+| N20 DC Gear Motor 12V 400RPM Metal Gearbox | 1 | Rear drive | [Amazon](https://www.amazon.com/dp/B0DB26SYNP) |
 | HobbyPark Brass 1.0 Beadlock Wheels & Tires for 1/18 TRX4M | 4 | Brass beadlock wheels + tires + foam inserts | [Amazon](https://www.amazon.com/dp/B0C3MNX4K7) |
 | PATIKIL U-Joint Steering Shaft Coupler 4mm to 3mm | 1 | Universal joint connects servo to front axle | [Amazon](https://www.amazon.com/dp/B0FWJGLZ9V) |
 | RC Front & Rear Axle Housing Set (TRX4M compatible) | 2 | Ackermann steering linkage | [Amazon](https://www.amazon.com/dp/B0CW2HFT57) |
 | Raspberry Pi 4B (4GB) | 1 | Main compute / vision / control unit | [Amazon](https://a.co/d/084kiOZ5) |
 | DIYmall 11KG Mini All-Metal Digital Servo (360° Coreless) | 1 | Front-wheel steering | [Amazon](https://www.amazon.com/dp/B0DX1XG18Y) |
-| DRV8871 H-Bridge DC Motor Driver | 2 | PWM motor control, 3.6A peak, one per motor channel (front + rear) | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
+| DRV8871 H-Bridge DC Motor Driver | 1 | PWM motor control, 3.6A peak, one per motor channel (front + rear) | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
 | Freenove 8MP Camera | 1 | Traffic sign color detection (Obstacle Challenge program) | [Amazon](https://www.amazon.com/dp/B0BZYPBS17) |
 | OVONIC 3S 11.1V 2200mAh LiPo Battery | 1 | Main power source | [Amazon](https://www.amazon.com/dp/B0D8SZRGJT) |
 | DC-DC Buck Converter 5V 5A | 1 | Steps 11.1V down to 5V rail | [Amazon](https://www.amazon.com/dp/B0D7MR48LB) |
@@ -480,8 +477,6 @@ We considered the DRV8833 (dual-channel, 1.5A/channel) but rejected it because o
 
 | GPIO pin | Function |
 |----------|---------|
-| 17 | Front motor DRV8871 IN1 (forward) — software-disabled |
-| 18 | Front motor DRV8871 IN2 (backward) — software-disabled |
 | 23 | Rear motor DRV8871 IN1 (forward) — active |
 | 22 | Rear motor DRV8871 IN2 (backward) — active |
 | 12 | Servo PWM signal |
@@ -516,9 +511,9 @@ This repository contains all engineering materials for Team CICSA's self-driving
 |----------|-----------|------|
 | 1 | Raspberry Pi 4B (4GB) — ~$55 | [Amazon](https://a.co/d/084kiOZ5) |
 | 1 | Freenove 8MP Camera — ~$14 | [Amazon](https://www.amazon.com/dp/B0BZYPBS17) |
-| 2 | DRV8871 H-Bridge DC Motor Driver — ~$4 each | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
+| 2 | DRV8871 H-Bridge DC Motor Driver — ~$4 | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
 | 1 | Slamtec RPLIDAR A1M8 360° 2D LIDAR — ~$99 | [Amazon](https://www.amazon.com/dp/B07TJW5SXF) |
-| 2 | N20 DC Gear Motor 12V 30RPM — ~$8 each | [Amazon](https://www.amazon.com/dp/B0DB26SYNP) |
+| 2 | N20 DC Gear Motor 12V 400RPM — ~$8 | [Amazon](https://www.amazon.com/dp/B0DB26SYNP) |
 | 1 | DIYmall 11KG Mini All-Metal Digital Servo — ~$16 | [Amazon](https://www.amazon.com/dp/B0DX1XG18Y) |
 | 4 | HobbyPark Brass Beadlock Wheels & Tires 1/18 TRX4M — ~$20/set | [Amazon](https://www.amazon.com/dp/B0C3MNX4K7) |
 | 1 | PATIKIL U-Joint Steering Shaft Coupler 4mm→3mm — ~$8 | [Amazon](https://www.amazon.com/dp/B0FWJGLZ9V) |
@@ -538,8 +533,8 @@ This repository contains all engineering materials for Team CICSA's self-driving
 | Raspberry Pi 4B | State machine, LIDAR processing, PID control, and PWM output (via `gpiozero`/`pigpio`) — all navigation logic in one controller |
 | Freenove Camera | Traffic sign color detection via OpenCV (Obstacle Challenge program only) |
 | Slamtec RPLIDAR A1M8 | 360° sector-based wall distance mapping for navigation and direction detection |
-| DRV8871 Driver (×2) | Efficient H-bridge motor control, one channel per motor (front + rear), driven directly from Pi GPIO |
-| N20 DC Gear Motor (×2) | Rear-wheel drive active; front-wheel drive wired but software-disabled |
+| DRV8871 Driver | Efficient H-bridge motor control, one channel per motor (front + rear), driven directly from Pi GPIO |
+| N20 DC Gear Motor| Rear-wheel drive active |
 | DIYmall 11KG Servo | Front-wheel Ackermann steering, driven via `gpiozero`'s `AngularServo` (pigpio-backed) |
 | HobbyPark Brass Wheels (×4) | High-grip 1.0" beadlock wheels for 1/18 TRX4M chassis |
 | PATIKIL U-Joint Coupler | 4mm-to-3mm universal joint connecting servo shaft to front axle |
