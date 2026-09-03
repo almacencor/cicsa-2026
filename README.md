@@ -130,20 +130,22 @@ For full game rules, visit the [WRO Official Site](https://wro-association.org/)
 
 ### Chassis and drive system
 
-Our chassis uses **front-wheel Ackermann steering**, matching a real car's geometry. On the drive side, the electronics and code are wired for **AWD (both front and rear axle motors)**, but the **front drive motor is disabled in software** by a flag (`MOTOR_FRONT_FLAG = False` in `wro2026_open_e.py`) — in normal operation only the rear axle motor is actually powered.
+Our chassis employs a **rear-wheel drive** (RWD) system using a 400-RPM N20 motor, capped at 50% power to optimize battery life and improve LiDAR readings during turns—as higher speeds caused the LiDAR to struggle, thereby increasing the margin of error. The motor connects to the wheels via a differential to enable tighter turns, while the front end features an Ackermann steering system.
 
-> **Note:** WRO Future Engineers requires a single powered drive axle. Our current build is wired with GPIO pins and an H-bridge channel reserved for a front motor, kept off purely by a software flag. We're evaluating physically removing that wiring before the next inspection to remove any ambiguity.
+**Drive motor: N20 DC 12V, 400 RPM**
 
-**Drive motor: N20 DC 12V, 30 RPM**
-
-We selected the N20 400 RPM variant after testing 500 RPM and 1000 RPM versions of the same motor family. The higher-RPM motors caused the robot to overshoot turns and made PID tuning unstable at low speeds. At 200 RPM with our 50mm diameter wheels, the linear speed is approximately:
+We selected the **N20 400 RPM variant** after testing 500 RPM and 1000 RPM versions of the same motor family. The higher-RPM motors caused the robot to overshoot turns and made PID tuning unstable at low speeds. We limit the motor power to just **200 rpm** (50% power) so that the robot has better PID control when turning in the shortest possible time and with the 2.09in diameter wheels, the linear speed is approximately:
 
 ```
-Wheel circumference = π × 50 mm ≈ 157 mm
-Speed = 200 RPM × 157 mm/rev ÷ 60 s ≈ 523.333 mm/s
+2.09 in x 2.54 = 5.3086
+R=5.3086 / 2=2.654
+C=3.1416 x 5.3086 = 16.667
+16.667 cm/rev x 200rev/min = 3335.4 cm/min
+3335.4 / 60 = 55.59cm/s
+linear speed 55.6 cm/s
 ```
 
-This ~52.3 cm/s base speed provides enough controllability for the PID loop while still completing three laps in a competitive time. The N20 at 12V produces ~1.5 kg·cm of stall torque, sufficient to move our robot including a safety margin for carpet-surface friction. In code, drive speed is set as a duty-cycle fraction (`target_velocity`, currently 0.5) rather than a raw RPM value.
+This ~55.6 cm/s base speed provides enough controllability for the PID loop while still completing three laps in a competitive time. The N20 at 12V produces ~1.5 kg·cm of stall torque, sufficient to move our 1.179 kg robot including a safety margin for carpet-surface friction. In code, drive speed is set as a duty-cycle fraction (`target_velocity`, currently 0.5) rather than a raw RPM value.
 
 **Steering: DIYmall 11KG Mini All-Metal Digital Servo**
 
@@ -173,23 +175,29 @@ With our wheelbase of approximately 120mm and a software steering limit of ±40�
 ## Power and sensor management
 
 ### Power system architecture
-
-| Component | Operating Voltage | Peak Current | Notes |
-|-----------|-----------------|-------------|-------|
-| Raspberry Pi 4B | 5V | 2.5A | Via USB-C through buck converter |
-| RPLidar A1M8 | 5V | 500mA | Separate 5V rail from buck converter |
-| N20 DC Motor (rear, active) | 12V | ~300mA (running) / ~1.5A stall | Via DRV8871 driver from battery direct |
-| N20 DC Motor (front, wired but software-disabled) | 12V | ~300mA (running) / ~1.5A stall | Via second DRV8871 channel; not engaged unless `MOTOR_FRONT_FLAG` is set `True` |
-| Steering Servo | 5V | ~800mA peak | Via 5V rail |
-| Freenove Camera | 5V (CSI) | ~250mA | Powered through Pi CSI connector — Obstacle Challenge program only |
+|Component | Operating Voltage	| Approx. Typical Current	| Approx. High/Maximum Current	| Approx. Power |
+|-----------|-----------------|-------------|-------|-------|
+|Raspberry Pi 4B	| 5 V	| 0.7–1.2 A	| ~1.5–2.0 A	| 3.5–10 W |
+|Freenove Camera	| 5 V	| ~0.1–0.3 A	| ~0.3–0.5 A	| 0.5–2.5 W |
+|LiDAR A1M8	| 5 V	| ~0.12–0.18 A	| ~0.2 A	| 0.6–1 W |
+|Mini Servo, 24.3 lb, 180°	| 5 V	| ~0.2–0.8 A	| ~1.5–2.0 A*	| 1–10 W |
+|N20 Motor #1, 400 RPM	| 11.1 V via DRV8871	| ~0.2–0.8 A	| ~1.5 A or higher*	| ~2–17 W |
+|N20 Motor #2, 400 RPM	| 11.1 V via DRV8871	| ~0.2–0.8 A	| ~1.5 A or higher*	| ~2–17 W |
 
 **Battery:** OVONIC 3S 11.1V, 2200 mAh
 
-We use a OVONIC 3S because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:55 minutes if the motors are in a middle range of work and the processor is not demanding to much energy 
+We use a OVONIC 3S because the N20 motors are rated for 12V and benefit from the full voltage range. A 2200 mAh capacity gives an estimated runtime of:1.11 hours if the motors are in a middle range of work and the processor is not demanding to much energy 
 
 ```
-Total average current draw ≈ 1.5A (motor running) + 0.9A (Pi + LIDAR + camera) ≈ 2.4A
-Estimated runtime = 2200 mAh ÷ 2400 mA ≈ 55 minutes
+1.20+0.30+0.18+0.50=2.18
+P5v = 5x2.18 = 10.9W
+Pmotor = 11.1x0.80 = 8.88W
+Ptotal = 10.9+8.88 = 19.78W
+90% regulator efficiency = 21.98W
+Ibattery = 21.98/11.1 = 1.98A
+11.1V x 2.2Ah = 24.42Wh
+Runtime = 24.42Wh/21.98W = 1.11H
+
 ```
 
 Three competition rounds are estimated at under 10 minutes total, giving more than 5× safety margin.
@@ -438,7 +446,7 @@ We considered the DRV8833 (dual-channel, 1.5A/channel) but rejected it because o
 | Component | Quantity | Description | Link |
 |-----------|----------|-------------|------|
 | Slamtec RPLIDAR A1M8 360° 2D LIDAR Scanner | 1 | 360° LIDAR for wall following and close-range checks | [Amazon](https://www.amazon.com/dp/B07TJW5SXF) |
-| N20 DC Gear Motor 12V 30RPM Metal Gearbox | 2 | Rear drive (active) + front drive (wired, software-disabled) | [Amazon](https://www.amazon.com/dp/B0DB26SYNP) |
+| N20 DC Gear Motor 12V 400RPM Metal Gearbox | 2 | Rear drive (active) + front drive (wired, software-disabled) | [Amazon](https://www.amazon.com/dp/B0DB26SYNP) |
 | HobbyPark Brass 1.0 Beadlock Wheels & Tires for 1/18 TRX4M | 4 | Brass beadlock wheels + tires + foam inserts | [Amazon](https://www.amazon.com/dp/B0C3MNX4K7) |
 | PATIKIL U-Joint Steering Shaft Coupler 4mm to 3mm | 1 | Universal joint connects servo to front axle | [Amazon](https://www.amazon.com/dp/B0FWJGLZ9V) |
 | RC Front & Rear Axle Housing Set (TRX4M compatible) | 2 | Ackermann steering linkage | [Amazon](https://www.amazon.com/dp/B0CW2HFT57) |
