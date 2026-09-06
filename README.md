@@ -181,7 +181,7 @@ With our wheelbase of approximately 120mm and a software steering limit of ±40�
 |Freenove Camera	| 5 V	| ~0.1–0.3 A	| ~0.3–0.5 A	| 0.5–2.5 W |
 |LiDAR A1M8	| 5 V	| ~0.12–0.18 A	| ~0.2 A	| 0.6–1 W |
 |Mini Servo, 24.3 lb, 180°	| 5 V	| ~0.2–0.8 A	| ~1.5–2.0 A*	| 1–10 W |
-|N20 Motor #1, 400 RPM	| 11.1 V via DRV8871	| ~0.2–0.8 A	| ~1.5 A or higher*	| ~2–17 W |
+|N20 Motor , 400 RPM	| 11.1 V via DRV8871	| ~0.2–0.8 A	| ~1.5 A or higher*	| ~2–17 W |
 
 **Battery:** OVONIC 3S 11.1V, 2200 mAh
 
