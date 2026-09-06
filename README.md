@@ -332,7 +332,7 @@ A safety early-exit ("CUELLO"/bottleneck check) is built into the long wall-foll
 
 ### Motor and steering actuation
 
-- **`drive_forward_awd()` / `drive_backward_awd()` / `stop_awd()`** — the wiring supports both axles, but only the rear motor is engaged in normal operation; the front motor call is skipped unless `MOTOR_FRONT_FLAG` is `True`. Each axle has its own independent power-scaling constant (`FACTOR_FRONT`, `FACTOR_REAR`), currently both set to 1.00.
+- **`drive_forward_rwd()` / `drive_backward_rwd()` / `stop_rwd()`** — The motor is connected to the rear-wheel differential to provide mobility for the robot.
 - **`set_steering_angle()`** — clamps the requested angle to `±STEERING_LIMIT` (40°), adds the `CENTER_OFFSET` trim (−20°), and writes the result to the `AngularServo`.
 
 ### Code structure
@@ -390,12 +390,6 @@ We still needed to solve the jitter problem, so instead of bit-banging PWM in Py
 
 **Alternative considered:** Keeping the ESP32. Rejected for 2026 because the added wiring complexity and UART maintenance burden outweighed the timing benefit at our modest drive speed.
 
-### Why a wired-but-disabled front motor instead of a true single-motor RWD build?
-
-Our chassis and driver wiring currently support both axles (two independent DRV8871 channels, one per motor), with the front axle disabled purely by the `MOTOR_FRONT_FLAG` software flag. This grew out of testing both configurations during development and not yet having finalized which one we're locking in for finals.
-
-**Alternative considered:** Physically wiring only the rear motor. This is the safer choice with respect to the single-drive-axle rule and is what we plan to do (or otherwise make unambiguous) before the next inspection — see the note in [Mobility management](#mobility-management).
-
 ### Why LIDAR + camera (not ultrasonic sensors)?
 
 Our previous design used two ultrasonic sensors for close-range obstacle avoidance and parking alignment, angled outward from center. In testing this season we found the LIDAR's minimum range (15cm) combined with its full 360° coverage gave us close-range awareness that was accurate enough to drop the ultrasonic sensors entirely for the Open Challenge. This simplified our wiring, freed up current budget on the 5V rail, and removed two more components that could fail or drift out of calibration.
@@ -418,7 +412,7 @@ We considered the DRV8833 (dual-channel, 1.5A/channel) but rejected it because o
 | v1.1 | Replaced breadboard with soldered protoboard | Eliminated loose-connection faults |
 | v2.0 | Custom 3D-printed top plate, camera moved to front | Reduced vibration noise, improved camera FOV |
 | v2.1 | Added LIDAR tower mount | LIDAR previously taped to chassis — now rigid and repeatable |
-| v3.0 | (Current) Removed ESP32 and ultrasonic sensors, consolidated all control onto the Raspberry Pi via `gpiozero`/`pigpio`, full cable management, dedicated power rails | Simplified wiring, cut cost and weight, eliminated UART maintenance and ground-loop noise from the removed ultrasonic sensors |
+| v3.0 | (Current) Removed ESP32 and ultrasonic sensors, consolidated all control onto the Raspberry Pi via `gpiozero`/`pigpio`, full cable management, dedicated power rails | Simplified wiring, cut cost and weight, eliminated UART maintenance and ground-loop noise from the removed ultrasonic sensors and delete the AWD traction for a RWD|
 
 ### Risk analysis
 
@@ -448,7 +442,7 @@ We considered the DRV8833 (dual-channel, 1.5A/channel) but rejected it because o
 | RC Front & Rear Axle Housing Set (TRX4M compatible) | 2 | Ackermann steering linkage | [Amazon](https://www.amazon.com/dp/B0CW2HFT57) |
 | Raspberry Pi 4B (4GB) | 1 | Main compute / vision / control unit | [Amazon](https://a.co/d/084kiOZ5) |
 | DIYmall 11KG Mini All-Metal Digital Servo (360° Coreless) | 1 | Front-wheel steering | [Amazon](https://www.amazon.com/dp/B0DX1XG18Y) |
-| DRV8871 H-Bridge DC Motor Driver | 1 | PWM motor control, 3.6A peak, one per motor channel (front + rear) | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
+| DRV8871 H-Bridge DC Motor Driver | 1 | PWM motor control, 3.6A peak, one per motor channel | [MercadoLibre](https://www.mercadolibre.com.mx/modulo-driver-drv8871-puente-h-control-motor-36a-65v-a-45v/up/MLMU3232504497) |
 | Freenove 8MP Camera | 1 | Traffic sign color detection (Obstacle Challenge program) | [Amazon](https://www.amazon.com/dp/B0BZYPBS17) |
 | OVONIC 3S 11.1V 2200mAh LiPo Battery | 1 | Main power source | [Amazon](https://www.amazon.com/dp/B0D8SZRGJT) |
 | DC-DC Buck Converter 5V 5A | 1 | Steps 11.1V down to 5V rail | [Amazon](https://www.amazon.com/dp/B0D7MR48LB) |
@@ -537,7 +531,7 @@ This repository contains all engineering materials for Team CICSA's self-driving
 | DIYmall 11KG Servo | Front-wheel Ackermann steering, driven via `gpiozero`'s `AngularServo` (pigpio-backed) |
 | HobbyPark Brass Wheels (×4) | High-grip 1.0" beadlock wheels for 1/18 TRX4M chassis |
 | PATIKIL U-Joint Coupler | 4mm-to-3mm universal joint connecting servo shaft to front axle |
-| RC Front & Rear Axle Set | Steering and drive axle housings |
+| RC Front & Rear Axle Set | Steering axle housings |
 | OVONIC 3S 2200mAh LiPo | Main power (11.1V, ~55 min runtime) |
 | Buck Converter 5V | Regulated 5V rail for Pi, LIDAR, servo |
 | Dupont Jumper Cables | All inter-module wiring connections |
@@ -604,9 +598,8 @@ We thank Coach Sergio Iván for his support and guidance throughout the season, 
 3. RPLidar A1M8 SDK — https://github.com/Slamtec/rplidar_sdk
 4. OpenCV HSV color detection — https://docs.opencv.org/4.x/df/d9d/tutorial_py_colorspaces.html
 5. Ziegler–Nichols PID tuning method — Ziegler, J.G. & Nichols, N.B. (1942). *Transactions of the ASME*, 64, 759–768.
-6. Elecrow 4WD Car Installation Instructions — https://www.elecrow.com/download/4wd_CAR_Install_instructions.pdf
-7. gpiozero documentation — https://gpiozero.readthedocs.io/
-8. pigpio library documentation — https://abyz.me.uk/rpi/pigpio/
-9. WRO Future Engineers Getting Started Guide — https://world-robot-olympiad-association.github.io/future-engineers-gs/
+6. gpiozero documentation — https://gpiozero.readthedocs.io/
+7. pigpio library documentation — https://abyz.me.uk/rpi/pigpio/
+8. WRO Future Engineers Getting Started Guide — https://world-robot-olympiad-association.github.io/future-engineers-gs/
 
 [▲ Menu](#contents)
