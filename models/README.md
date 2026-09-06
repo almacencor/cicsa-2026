@@ -42,7 +42,7 @@ This bracket supports the robot's camera and keeps it in the required position.
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the camera mount](images/b_camera_model.png) | ![Technical drawing of the camera mount](images/b_camera_drawing.png) |
+| ![3D model of the camera mount](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/b_camera_model.png) | ![Technical drawing of the camera mount](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/b_camera_drawing.png) |
 
 ### 4. Connector Base - `b_connector`
 
@@ -50,7 +50,7 @@ This base provides the mounting area for the robot's electronic components and t
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the connector base](images/b_connector_model.png) | ![Technical drawing of the connector base](models/b_connector_drawing.png) |
+| ![3D model of the connector base](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/b_connector_model.png) | ![Technical drawing of the connector base](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/b_connector_drawing.png) |
 
 ### 5. Raspberry Pi Base - `b_raspberry`
 
@@ -58,7 +58,7 @@ This base holds the robot's main processing board, a Raspberry Pi 4.
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the Raspberry Pi 4 base](images/b_raspberry_model.png) | ![Technical drawing of the Raspberry Pi 4 base](images/b_raspberry_drawing.png) |
+| ![3D model of the Raspberry Pi 4 base](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/b_raspberry_model.jpg) | ![Technical drawing of the Raspberry Pi 4 base](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/b_raspberry_drawing.png) |
 
 ### 6. Steering Servo Mount - `b_servo`
 
@@ -66,7 +66,7 @@ This base holds the steering servomotor and is installed at the front of the rob
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the steering servo mount](images/b_servo_model.png) | ![Technical drawing of the steering servo mount](models/b_servo_drawing.jpg) |
+| ![3D model of the steering servo mount](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/b_servo_model.jpg) | ![Technical drawing of the steering servo mount](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/b_servo_drawing.jpg) |
 
 ### 7. Connector-Base Support - `s_b_connector`
 
@@ -74,7 +74,7 @@ This part supports the base that holds the connector assembly.
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the connector-base support](images/s_b_connector_model.png) | ![Technical drawing of the connector-base support](images/s_b_connector_drawing.png) |
+| ![3D model of the connector-base support](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/s_b_connector_model.jpg) | ![Technical drawing of the connector-base support](https://github.com/almacencor/cicsa-2026/blob/6eaae0f350b0609d282c71fe622c4c9bf642bdf3/models/s_b_connector_drawing.png) |
 
 ## Manufacturing
 
