@@ -26,7 +26,7 @@ The main chassis is the robot's central structural component. It provides mounti
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the main robot chassis](images/b_principal_model.png) | ![Technical drawing of the main robot chassis](images/b_principal_drawing.png) |
+| ![3D model of the main robot chassis](https://github.com/almacencor/cicsa-2026/blob/72d4accd33c47af83d0966273fa2115fde2ef06f/models/b_principal_model.jpg) | ![Technical drawing of the main robot chassis](https://github.com/almacencor/cicsa-2026/blob/72d4accd33c47af83d0966273fa2115fde2ef06f/models/b_principal_drawing.png) |
 
 ### 2. Battery Mount - `b_battery`
 
@@ -50,7 +50,7 @@ This base provides the mounting area for the robot's electronic components and t
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the connector base](images/b_connector_model.png) | ![Technical drawing of the connector base](images/b_connector_drawing.png) |
+| ![3D model of the connector base](images/b_connector_model.png) | ![Technical drawing of the connector base](models/b_connector_drawing.png) |
 
 ### 5. Raspberry Pi Base - `b_raspberry`
 
@@ -66,7 +66,7 @@ This base holds the steering servomotor and is installed at the front of the rob
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the steering servo mount](images/b_servo_model.png) | ![Technical drawing of the steering servo mount](images/b_servo_drawing.png) |
+| ![3D model of the steering servo mount](images/b_servo_model.png) | ![Technical drawing of the steering servo mount](models/b_servo_drawing.jpg) |
 
 ### 7. Connector-Base Support - `s_b_connector`
 
