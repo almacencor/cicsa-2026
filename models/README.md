@@ -34,7 +34,7 @@ This compact base secures the battery and is mounted directly onto the main chas
 
 | 3D model | Technical drawing |
 |---|---|
-| ![3D model of the battery mount](images/b_battery_model.png) | ![Technical drawing of the battery mount](images/b_battery_drawing.png) |
+| ![3D model of the battery mount](https://github.com/almacencor/cicsa-2026/blob/3a70484e0e2ceb1b544524c248886f85f15de77b/models/b_battery_model.png) | ![Technical drawing of the battery mount](https://github.com/almacencor/cicsa-2026/blob/3a70484e0e2ceb1b544524c248886f85f15de77b/models/b_battery_drawing.png) |
 
 ### 3. Camera Mount - `b_camera`
 
