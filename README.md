@@ -182,13 +182,14 @@ With our wheelbase of approximately 120mm and a software steering limit of ±40�
 |LiDAR A1M8	| 5 V	| ~0.12–0.18 A	| ~0.2 A	| 0.6–1 W |
 |Mini Servo, 24.3 lb, 180°	| 5 V	| ~0.2–0.8 A	| ~1.5–2.0 A*	| 1–10 W |
 |N20 Motor , 400 RPM	| 11.1 V via DRV8871	| ~0.2–0.8 A	| ~1.5 A or higher*	| ~2–17 W |
+|MPU 6050 | 5V | 3.9mA | 5mA | 13mA |
 
 **Battery:** OVONIC 3S 11.1V, 2200 mAh
 
 We use an 11.1V OVONIC 3S battery; although it nominally provides 12.6V, the voltage drops to 11.1V under load. It is capable of powering the N20 motor, as the motor primarily relies on current—which the 8871 driver supplies. A 2200 mAh capacity gives an estimated runtime of:1.11 hours if the motors are in a middle range of work and the processor is not demanding to much energy 
 
 ```
-1.20+0.30+0.18+0.50=2.18
+1.20+0.30+0.18+0.50+0.0039=2.1839
 P5v = 5x2.18 = 10.9W
 Pmotor = 11.1x0.80 = 8.88W
 Ptotal = 10.9+8.88 = 19.78W
@@ -213,6 +214,7 @@ A DC-DC buck converter steps the 11.1V battery down to a stable 5V 5A rail for t
 Actual GPIO assignments:
 - Battery (+) → DRV8871 (1) VM IN and Buck Converter IN
 - Buck converter 5V OUT → Raspberry Pi USB-C, LIDAR 5V, Servo signal rail
+- Raspberry Pi **GPIO 2, 3** → SCL and SDA 
 - Raspberry Pi **GPIO 23** → Rear-motor DRV8871 IN1 (forward)
 - Raspberry Pi **GPIO 22** → Rear-motor DRV8871 IN2 (backward) — this is the channel actually driving the robot
 - Raspberry Pi **GPIO 12** (hardware PWM via `pigpio`) → Servo signal wire
@@ -354,27 +356,277 @@ src/
 
 **Everything in this section describes the separate Obstacle Challenge program, which is not part of `wro2026_open_e.py`.** The Open Challenge script has no camera input and no color/parking logic.
 
-### Traffic sign detection and response
+# WRO 2026 Future Engineers - Obstacle Challenge
 
-When the camera detects a pillar:
+Autonomous vehicle developed for the *WRO 2026 Future Engineers Obstacle Challenge*. The system runs on a Raspberry Pi 4 and combines a 2D LiDAR, a camera, and an MPU6050 inertial sensor to follow walls, determine the driving direction, avoid colored traffic pillars, negotiate corners, recover from critical situations, and complete the required laps.
+ 
+> Main program: wro2026_obstacle.py
 
-1. A bounding box is drawn around the detected contour.
-2. The centroid X position is normalized: `cx_norm = (cx - frame_width/2) / (frame_width/2)` → range [−1, 1].
-3. If **red**: the robot's wall-follow setpoint shifts toward the **right wall** by `shift = 0.15 × (1 + cx_norm)` meters.
-4. If **green**: the robot's wall-follow setpoint shifts toward the **left wall** by the same formula.
-5. The shift decays back to center once the pillar is no longer visible.
+## Project goals
 
-**Edge case handling:** When two pillars of the same color appear simultaneously, we take the centroid of the larger contour. When red and green appear at the same time (rare), red takes priority (right-side passage is safer given typical track geometry).
+The controller was designed around five priorities:
 
-### Parallel parking
+- Compliance with the WRO Future Engineers obstacle rules.
+- Repeatable behavior with different battery levels.
+- Sensor validation instead of acting on isolated measurements.
+- A clear finite-state machine for testing and debugging.
+- Recovery from temporary faults without immediately ending the run.
 
-The parking sequence is triggered after the third lap. Steps:
+## Hardware
 
-1. **PARK_SEARCH:** Robot drives at reduced speed (~30% PWM). Camera scans for two magenta rectangular markers using a dedicated HSV range for magenta.
-2. **Alignment:** Once both markers are detected and separated by the expected pixel distance for the parking gap, the robot stops alongside the zone.
-3. **Entry:** Robot reverses and steers into the parking zone. The LIDAR's side-facing readings are monitored to prevent contact with the right-hand wall.
-4. **Straighten:** Once inside the zone, the robot straightens the servo to center and drives forward slightly to center itself.
-5. **Confirm:** If both LIDAR side readings show < 25cm (walls on each side), the robot is confirmed parked and motors stop.
+| Component | Purpose | Connection |
+|---|---|---|
+| Raspberry Pi 4 | Main computer and control coordinator | Central controller |
+| RPLidar A1 | Front and lateral distances, wall geometry, open spaces, and corner detection | USB serial, normally /dev/ttyUSB0 |
+| Freenove IMX219 camera | Red/green pillar detection and image position | Raspberry Pi CSI interface |
+| MPU6050 | Angular velocity, accumulated heading, and 90-degree turn confirmation | I2C: SDA GPIO 2, SCL GPIO 3 |
+| Ackermann steering servo | Front steering angle | GPIO 12 |
+| Rear DC motor and driver | Forward and reverse movement | GPIO 23 and GPIO 22 |
+| MPU6050 | Know the robot position | GPIO 2 and GPIO 3 |
+
+The LiDAR convention used by the software is:
+
+- 0°: front
+- 90°: right
+- 180°: rear
+- 270°: left
+
+Positive steering angles turn left; negative angles turn right.
+
+## System architecture
+
+The sensors run in independent background threads. Each thread publishes its newest measurement with a sequence number and timestamp. A single fixed-rate controller reads the latest snapshots at *40 Hz*, validates them, executes the active state, and sends commands to the steering servo and rear motor.
+
+mermaid
+flowchart TD
+    CAM["Camera<br/>pillar color, x, bottom, area"]
+    LIDAR["RPLidar A1<br/>front, left, right, wall angle"]
+    MPU["MPU6050<br/>heading and angular change"]
+
+    SNAP["Time-stamped sensor snapshots"]
+    VALID["Validation and filtering"]
+    FSM["40 Hz finite-state controller"]
+    ACT["Steering servo and rear motor"]
+    TELE["CSV telemetry"]
+
+    CAM --> SNAP
+    LIDAR --> SNAP
+    MPU --> SNAP
+    SNAP --> VALID --> FSM
+    FSM --> ACT
+    FSM --> TELE
+
+
+## How each sensor is used
+
+### RPLidar A1
+
+The LiDAR is the main geometric sensor. Its scans are divided into angular sectors to obtain front, left, and right distances. Recent measurements are filtered with medians and checked for minimum point count, age, physical range, and impossible jumps.
+
+It supports:
+
+- Corridor centering before the driving direction is known.
+- Outer-wall following during normal sections.
+- Selection of the closest reliable wall during pillar avoidance.
+- Detection of the front wall before a corner.
+- Verification that enough space exists during reverse and corner exit.
+- Recovery when a distance becomes critical or the LiDAR stops updating.
+
+### Camera
+
+The IMX219 camera detects red and green traffic pillars. The image pipeline applies a region of interest, color segmentation, blob filtering, and geometric plausibility checks.
+
+For every candidate, the controller considers:
+
+- Color: red or green.
+- Horizontal position (x).
+- Bottom position in the image.
+- Blob area and shape.
+- Agreement between two independent distance estimates.
+
+The color determines the legal passing side:
+
+| Pillar | Robot passes on | Pillar remains on |
+|---|---|---|
+| Red | Right | Left side of the robot |
+| Green | Left | Right side of the robot |
+
+A short hold period prevents the maneuver from ending because of one missed camera frame. After the pillar disappears, the controller completes the crossing using LiDAR distance and MPU6050 heading.
+
+### MPU6050
+
+The MPU6050 is calibrated while the robot is completely stationary. The Z-axis gyroscope is filtered and integrated to estimate accumulated heading.
+
+It is used to:
+
+- Maintain a heading reference during cascaded wall control.
+- Measure the angular displacement produced while avoiding a pillar.
+- Apply counter-steering after the pillar has been passed.
+- Confirm each 90-degree corner by heading instead of time alone.
+- Compare the expected total heading with the number of completed corners.
+
+Using heading feedback makes the corner maneuver less dependent on motor speed or battery voltage.
+
+## Finite-state machine
+
+mermaid
+stateDiagram-v2
+    [*] --> START
+    START --> DETERMINE_DIRECTION: sensors ready
+    DETERMINE_DIRECTION --> REVERSE: first corner detected
+
+    STRAIGHT --> PILLAR: valid pillar detected
+    PILLAR --> STRAIGHT: pillar passed
+    STRAIGHT --> REVERSE: corner confirmed
+
+    REVERSE --> TURN: reverse clearance reached
+    TURN --> EXIT_TURN: 90-degree turn confirmed
+    EXIT_TURN --> STRAIGHT: more corners required
+    EXIT_TURN --> FINISHED: final corner completed
+
+    DETERMINE_DIRECTION --> RECOVER: recoverable condition
+    STRAIGHT --> RECOVER: recoverable condition
+    PILLAR --> RECOVER: recoverable condition
+    REVERSE --> RECOVER: recoverable condition
+    TURN --> RECOVER: recoverable condition
+    EXIT_TURN --> RECOVER: recoverable condition
+    RECOVER --> DETERMINE_DIRECTION: retry initial approach
+    RECOVER --> STRAIGHT: retry section
+    RECOVER --> REVERSE: retry corner
+    FINISHED --> [*]
+
+
+| State | Main responsibility | Principal sensors |
+|---|---|---|
+| START | Initialize actuators, telemetry, and sensor threads | All |
+| DETERMINE_DIRECTION | Center the robot and identify the outer wall at the first corner | LiDAR, camera, MPU6050 |
+| STRAIGHT | Follow the active reference wall and search for the next event | LiDAR, camera, MPU6050 |
+| PILLAR | Cross to the legal side and pass the detected pillar | Camera, LiDAR, MPU6050 |
+| REVERSE | Create enough space before turning | LiDAR |
+| TURN | Execute and confirm the 90-degree corner | MPU6050, LiDAR fallback |
+| EXIT_TURN | Leave the corner and restore normal motion | LiDAR |
+| RECOVER | Reverse, reposition, and retry a recoverable state | LiDAR, active-state context |
+| FINISHED | Stop motion, close telemetry, and stop threads | All |
+
+## Development process
+
+### 1. Basic propulsion and steering
+
+Development started by calibrating the rear motor, steering center, and asymmetric left/right steering limits. Braking was improved with a short opposite-direction motor pulse to reduce inertia and make stopping distance more repeatable.
+
+### 2. LiDAR wall following
+
+The first autonomous behavior used the RPLidar A1 to follow the outer wall. Raw scans were divided into sectors and filtered. A fixed-rate loop was then introduced so control timing no longer depended on the LiDAR scan rate.
+
+The straight controller evolved into a cascaded structure:
+
+1. Lateral distance error generates a target heading offset.
+2. MPU6050 heading error generates the steering command.
+3. Steering limits and critical-distance protections constrain the result.
+
+### 3. Camera-based pillar detection
+
+Red and green segmentation was added using the Raspberry Pi camera. Early tests showed that color alone could create false detections, so the detector was expanded with minimum area, aspect ratio, bounding-box fill, region-of-interest, temporal confirmation, and geometric plausibility filters.
+
+Two image measurements estimate pillar distance independently: blob area and vertical bottom position. A candidate is accepted only when both estimates are reasonably consistent.
+
+### 4. Pillar avoidance
+
+The first avoidance controller always referenced the outer wall. That became unreliable when the robot crossed away from it, especially when a black wall produced few LiDAR returns at long range.
+
+The final strategy follows one rule: *during avoidance, use the wall on the side toward which the robot is crossing*. This keeps the reference wall closer and gives the LiDAR a more reliable surface.
+
+The maneuver continues briefly after the camera loses sight of the pillar. LiDAR distance controls the remaining lateral crossing, while the MPU6050 measures the heading change and guides the counter-steering phase.
+
+### 5. MPU6050 heading control
+
+Time-based turns varied with battery voltage and surface conditions. The MPU6050 was therefore added to measure heading directly. The software calibrates gyroscope bias at startup, filters vibration, learns or applies the rotation sign, and confirms the corner when the accumulated change reaches the target angle.
+
+### 6. Recovery and robustness
+
+Instead of aborting after every sensor anomaly, the controller classifies selected faults as recoverable. Recovery brakes the robot, chooses a safe reverse steering direction from the obstacle location, reverses until space is available, centers the steering, and retries the interrupted state.
+
+Additional protections include:
+
+- Sensor age and health checks.
+- LiDAR jump rejection held for the complete scan.
+- Maximum valid wall distance.
+- Critical front and lateral distances.
+- Camera outage speed limitation.
+- Maximum duration for blind crossing phases.
+- Limited recovery and corner retry counts.
+- CSV telemetry for post-run analysis.
+
+### 7. Direction detection and complete-lap sequence
+
+At startup, the robot does not yet know which wall is outside. It centers between both walls and approaches the first corner. The side that opens identifies the inner area of the track; the opposite side becomes the outer reference wall. The controller then executes the first corner and repeats straight-section and corner states until the configured number of corners is complete.
+
+## Software requirements
+
+- Raspberry Pi OS with Python 3
+- gpiozero
+- pigpio daemon and Python interface
+- opencv-python / Raspberry Pi OpenCV package
+- picamera2
+- smbus2
+- rplidar (rplidar-roboticia compatible API)
+
+
+## Running the controller
+
+Start the pigpio service before a hardware run:
+
+bash
+sudo systemctl start pigpiod
+
+
+Run a normal three-lap session:
+
+bash
+cd /home/pi/wro2026/wro2026_obstacle
+source /home/pi/rplidar_env/bin/activate
+python3 wro2026_obstacle_english.py
+
+
+Run one lap for testing:
+
+bash
+python3 wro2026_obstacle_english.py --vueltas 1
+
+
+Run the logic tests without hardware:
+
+bash
+python3 wro2026_obstacle_english.py --autotest
+
+
+Run the simulator when the companion simulation module is available:
+
+bash
+python3 wro2026_obstacle_english.py --sim
+
+
+Disable telemetry if required:
+
+bash
+python3 wro2026_obstacle_english.py --sin-telemetria
+
+
+> Keep the robot completely still during MPU6050 calibration. For bench testing, raise the driven wheels or disconnect motor power until the steering and sensor checks are complete.
+
+## Telemetry
+
+During a run, the controller can save CSV rows containing:
+
+- Current state and corner number.
+- Front, left, and right LiDAR distances.
+- Active reference wall and target distance.
+- Steering and speed commands.
+- Pillar color, horizontal position, bottom position, and area.
+- MPU6050 heading and relative heading.
+- LiDAR and camera health flags.
+
+These logs were essential for comparing runs, identifying false measurements, adjusting thresholds, and verifying whether a failure came from perception, control, or mechanical behavior.
 
 [▲ Menu](#contents)
 
@@ -449,6 +701,7 @@ We considered the DRV8833 (dual-channel, 1.5A/channel) but rejected it because o
 | 3×120 Dupont Jumper Cables 40cm (M-M, M-F, F-F) | 3 packs | Wiring between all modules | [MercadoLibre](https://articulo.mercadolibre.com.mx/MLM-3643032042-3pzs-120-jumper-cable-dupont-wire-40cm-cable-para-protoboard-_JM) |
 | Velstron 1,112-piece M3/M4/M5/M6 Screws, Bolts & Nuts Kit | 1 | Chassis fasteners and assembly hardware | [MercadoLibre](https://www.mercadolibre.com.mx/kit-surtido-de-1112-piezas-de-tornillos-pernos-y-tuercas/up/MLMU582984840) |
 | 5-Pack Rocker Switch ON/OFF Red 2-Pin 127V/10A | 1 | In-line with battery positive | [MercadoLibre](https://www.mercadolibre.com.mx/5-pzas-interruptor-onoff-rojo-2-pines-127v10a-rojo/p/MLM59606936) |
+| GY521 MPU6050 3-axis gyroscope | 1 | Help the robot to know the position of where he is | [AMAZON](https://www.amazon.com/gp/product/B0CRVR1P66/ref=ox_sc_act_title_1?smid=A1MYENKL68XMV9&psc=1). |
 
 **Estimated total cost: ~$325 USD**
 
@@ -516,8 +769,9 @@ This repository contains all engineering materials for Team CICSA's self-driving
 | 3 packs | 3×120 Dupont Jumper Cables 40cm — ~$6/pack | [MercadoLibre](https://articulo.mercadolibre.com.mx/MLM-3643032042-3pzs-120-jumper-cable-dupont-wire-40cm-cable-para-protoboard-_JM) |
 | 1 | Velstron 1,112-piece M3/M4/M5/M6 Hardware Kit — ~$18 | [MercadoLibre](https://www.mercadolibre.com.mx/kit-surtido-de-1112-piezas-de-tornillos-pernos-y-tuercas/up/MLMU582984840) |
 | 1 | 5-Pack Rocker Switch ON/OFF Red 2-Pin 127V/10A — ~$4 | [MercadoLibre](https://www.mercadolibre.com.mx/5-pzas-interruptor-onoff-rojo-2-pines-127v10a-rojo/p/MLM59606936) |
+| 1 | GY521 MPU6050 3-axis gyroscope - ~$4 | [AMAZON](https://www.amazon.com/gp/product/B0CRVR1P66/ref=ox_sc_act_title_1?smid=A1MYENKL68XMV9&psc=1). |
 
-**Estimated total cost: ~$325 USD**
+**Estimated total cost: ~$375 USD**
 
 ### Component function summary
 
@@ -537,6 +791,7 @@ This repository contains all engineering materials for Team CICSA's self-driving
 | Dupont Jumper Cables | All inter-module wiring connections |
 | M3/M4/M5/M6 Hardware Kit | Chassis assembly fasteners (screws, bolts, nuts, washers) |
 | Rocker Switch ON/OFF Red 2-Pin | Power control switch in-line with battery positive |
+| GY521 MPU6050 3-axis gyroscope | Know the robot position at all time |
 
 ### Software and libraries
 
