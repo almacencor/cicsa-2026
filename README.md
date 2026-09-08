@@ -636,7 +636,7 @@ The camera, LiDAR, and MPU6050 operate concurrently. Each sensor thread publishe
 
 Figure 1. Simplified execution flow.
 
-<img width="842" height="468" alt="image" src="https://github.com/user-attachments/assets/f008d91d-e2a0-4c5f-97a4-c56cfcc7fe91" />
+<img width="800" height="500" alt="image" src="https://github.com/almacencor/cicsa-2026/blob/910968a91369ff0014d13990e8ab9af127acb390/schemes/Diagrama_de_flujo_F1.jpg" />
 
 ### 2. Finite-State Machine
 
@@ -648,7 +648,7 @@ MPU6050: Heading stabilization and confirmation of the 90-degree turn.
 
 Figure 2. Main FSM states and transitions.
 
-<img width="842" height="468" alt="image" src="https://github.com/user-attachments/assets/f008d91d-e2a0-4c5f-97a4-c56cfcc7fe91" />
+<img width="800" height="500" alt="image" src="https://github.com/almacencor/cicsa-2026/blob/910968a91369ff0014d13990e8ab9af127acb390/schemes/Diagrama_de_flujo_F2.jpg" />
 
 ### 3. State Summary
 
