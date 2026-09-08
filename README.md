@@ -628,6 +628,57 @@ During a run, the controller can save CSV rows containing:
 
 These logs were essential for comparing runs, identifying false measurements, adjusting thresholds, and verifying whether a failure came from perception, control, or mechanical behavior.
 
+# Code challenge flowchart
+
+### 1. Simplified Program Flow
+
+The camera, LiDAR, and MPU6050 operate concurrently. Each sensor thread publishes its latest time-stamped measurement. The 40 Hz Finite-State Machine (FSM) reads and validates these sensor snapshots before determining the vehicle's steering and speed commands.
+
+Figure 1. Simplified execution flow.
+
+<img width="842" height="468" alt="image" src="https://github.com/user-attachments/assets/f008d91d-e2a0-4c5f-97a4-c56cfcc7fe91" />
+
+### 2. Finite-State Machine
+
+The FSM connects each sensor to the states where it is primarily used:
+
+Camera: Pillar recognition and passing-side selection.
+LiDAR: Wall following, clearance monitoring, and corner detection.
+MPU6050: Heading stabilization and confirmation of the 90-degree turn.
+
+Figure 2. Main FSM states and transitions.
+
+<img width="842" height="468" alt="image" src="https://github.com/user-attachments/assets/f008d91d-e2a0-4c5f-97a4-c56cfcc7fe91" />
+
+### 3. State Summary
+
+State	Purpose
+START	Initialize actuators, telemetry, MPU6050, LiDAR, and camera.
+DETERMINE_DIRECTION	Center the vehicle in the corridor, handle an early pillar, and identify the outer wall at the first corner.
+STRAIGHT	Follow the active reference wall and monitor the next corner.
+PILLAR	Select the legal passing side and control the crossing using camera, LiDAR, and heading information.
+REVERSE	Move backward from the corner to create sufficient turning space.
+TURN	Execute and confirm the 90-degree turn, primarily using MPU6050 heading data.
+EXIT_TURN	Straighten the steering and safely exit the corner.
+RECOVER	Reverse and reposition the vehicle after a recoverable sensor or distance condition, then retry the maneuver.
+FINISHED	Brake, center the steering, save telemetry, and stop all sensor threads.
+
+### 4. Control-Cycle Logic
+
+The control loop runs at 40 Hz and follows these steps:
+
+Read the newest sensor snapshots without waiting for a new LiDAR scan.
+Validate sensor age, measurement range, geometric plausibility, and detect impossible measurement jumps.
+Select the reference wall:
+Outer wall during normal driving.
+Passing-side wall during pillar avoidance.
+Compute the appropriate steering and speed commands.
+Apply safety limits to the control commands.
+Record telemetry data.
+Repeat the cycle at 40 Hz.
+
+This architecture allows the vehicle to process sensor data concurrently while maintaining a deterministic control cycle through the FSM.
+
 [▲ Menu](#contents)
 
 ---
