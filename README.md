@@ -207,7 +207,7 @@ A DC-DC buck converter steps the 11.1V battery down to a stable 5V 5A rail for t
 
 **Wiring diagram:**
 
-<img width="700" height="450" alt="image" src="https://github.com/almacencor/cicsa-2026/blob/048638e6a9000a8f82b7b042559e68e5233ddf8a/v-photos/Diagrama_electrico_rigoberto.png" />
+<img width="700" height="450" alt="image" src="https://github.com/almacencor/cicsa-2026/blob/88d9c2ad6399c6f35265efbc68e15540aff8c885/v-photos/Diagrama_electrico_rigoberto.png" />
 
 > See [📁 Schemes](./schemes/) for the full wiring schematic (Fritzing + PDF export).
 
